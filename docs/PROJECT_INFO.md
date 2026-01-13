@@ -4,52 +4,73 @@
 safetyhub/
 │
 ├── docs/                           # 문서
-│   ├── architecture/               # 아키텍처 설계
-│   ├── api/                        # API 명세
-│   └── hardware/                   # 하드웨어 회로도
+│   ├── ACHITECTURE.md              # 아키텍처 설계
+│   ├── DEVROADMAP.md               # 개발 로드맵
+│   ├── FLOW.md                     # 통합 시나리오
+│   ├── PRODUCT_LINE_UP.md          # 제품 라인업
+│   ├── PROJECT_INFO.md             # 프로젝트 정보 (본 문서)
+│   └── TECH_INFO.md                # 기술 스택
 │
-├── backend/
-│   ├── safetyhub-core/             # 도메인 모델, 이벤트
-│   ├── safetyhub-gateway/          # 통합 게이트웨이
-│   ├── safetyhub-application/      # UseCase 구현
-│   │   ├── device-control/         # 설비 제어
-│   │   ├── worker-monitoring/      # 작업자 모니터링
-│   │   └── emergency-response/     # 긴급 대응
-│   ├── safetyhub-adapter/
-│   │   ├── adapter-mqtt/           # MQTT 어댑터
-│   │   ├── adapter-websocket/      # WebSocket 어댑터
-│   │   ├── adapter-rest/           # REST API
-│   │   └── adapter-simulator/      # 시뮬레이터 어댑터
-│   ├── safetyhub-infrastructure/
-│   │   ├── persistence/            # JPA, Redis
-│   │   ├── messaging/              # Kafka
-│   │   └── external/               # 119 API, SMS 등
-│   └── safetyhub-bootstrap/        # 실행 애플리케이션
+├── backend/                        # ✅ 구현 완료
+│   ├── build.gradle                # 루트 빌드 설정
+│   ├── settings.gradle             # 모듈 설정
+│   ├── gradle.properties           # 버전 관리
+│   ├── Dockerfile                  # 컨테이너 빌드
+│   │
+│   ├── safetyhub-core/             # 🟢 도메인 모델, 이벤트 (의존성 없음)
+│   │   └── src/main/java/com/safetyhub/core/
+│   │       ├── domain/             # Device, Worker, Zone, Emergency, Location
+│   │       ├── event/              # DomainEvent, EmergencyDetectedEvent 등
+│   │       └── port/out/           # Repository, EventPublisher 인터페이스
+│   │
+│   ├── safetyhub-application/      # 🟡 UseCase 구현
+│   │   ├── device-control/         # DeviceControlUseCase, DeviceControlService
+│   │   ├── worker-monitoring/      # WorkerMonitoringUseCase, WorkerMonitoringService
+│   │   └── emergency-response/     # EmergencyResponseUseCase, EmergencyResponseService
+│   │
+│   ├── safetyhub-adapter/          # 🔵 외부 어댑터
+│   │   ├── adapter-mqtt/           # MqttMessageHandler
+│   │   ├── adapter-websocket/      # WebSocketConfig, WebSocketEventPublisher
+│   │   ├── adapter-rest/           # DeviceController, WorkerController, EmergencyController
+│   │   └── adapter-simulator/      # DeviceSimulator
+│   │
+│   ├── safetyhub-infrastructure/   # 🟣 인프라 구현
+│   │   ├── persistence/            # JPA Entity, Repository 구현
+│   │   ├── messaging/              # KafkaEventPublisher
+│   │   └── external/               # Emergency119ApiClient
+│   │
+│   ├── safetyhub-gateway/          # 🔴 통합 게이트웨이
+│   │   └── src/main/java/.../      # MessageRouter (Hot/Warm/Cold Path)
+│   │
+│   └── safetyhub-bootstrap/        # ⚪ 실행 애플리케이션
+│       ├── src/main/java/.../      # SafetyHubApplication
+│       └── src/main/resources/     # application.yml
 │
-├── frontend/
+├── frontend/                       # 📋 예정
 │   ├── dashboard/                  # 관제 대시보드
 │   └── mobile-app/                 # React Native 앱
 │
-├── simulator/
+├── simulator/                      # 📋 예정
 │   ├── robot-simulator/            # 로봇 시뮬레이터
 │   ├── device-simulator/           # SafetyKit 시뮬레이터
 │   └── worker-simulator/           # LifeGuard 시뮬레이터
 │
-├── hardware/
+├── hardware/                       # 📋 예정
 │   ├── safetykit/
-│   │   ├── firmware/               # ESP32 펀웨어
+│   │   ├── firmware/               # ESP32 펌웨어
 │   │   ├── pcb/                    # PCB 설계 (KiCad)
 │   │   └── case/                   # 케이스 설계 (3D)
 │   └── lifeguard/
-│       ├── firmware/               # nRF52 펀웨어
+│       ├── firmware/               # nRF52 펌웨어
 │       └── pcb/                    # PCB 설계
 │
-├── infra/
-│   ├── docker/                     # Docker 설정
-│   ├── k8s/                        # Kubernetes 배포
-│   └── terraform/                  # 클라우드 인프라
+├── infra/                          # ✅ 구현 완료
+│   └── docker/                     # Docker 설정
+│       ├── mysql/init/             # MySQL 초기화 스크립트
+│       ├── prometheus/             # Prometheus 설정
+│       └── grafana/provisioning/   # Grafana 데이터소스
 │
-└── docker-compose.yml              # 로컬 개발 환경
+└── docker-compose.yml              # ✅ 로컬 개발 환경
 ```
 
 ---
@@ -143,6 +164,19 @@ safetyhub/
 
 ---
 
-**문서 버전:** v1.0
+## 빠른 시작
 
-**최종 수정:** 2026-01-09
+```bash
+# 1. 인프라 서비스 실행
+docker-compose up -d
+
+# 2. 애플리케이션 빌드 및 실행
+cd backend
+./gradlew :safetyhub-bootstrap:bootRun
+```
+
+---
+
+**문서 버전:** v1.1
+
+**최종 수정:** 2026-01-13
