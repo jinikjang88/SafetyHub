@@ -80,13 +80,45 @@ SafetyHub는 클린 아키텍처(Clean Architecture) 원칙에 따라 설계되�
 
 | 구성요소 | 기술 | 역할 |
 | --- | --- | --- |
-| 메인 DB | PostgreSQL | 데이터 영속화 |
-| 캐시 | Redis Cluster | 상태 실시간 조회 |
-| 메시징 | Apache Kafka | 이벤트 스트림 |
-| 시계열 DB | TimescaleDB | 센서 데이터 저장 |
+| 메인 DB | MySQL 8.x | 데이터 영속화 |
+| 캐시 | Redis 7.x | 상태 실시간 조회 |
+| 메시징 | Apache Kafka 3.7.x | 이벤트 스트림 |
+| MQTT Broker | HiveMQ CE | IoT 장치 연결 |
 
 ---
 
-**문서 버전:** v1.0
+## 구현된 모듈 구조
 
-**최종 수정:** 2026-01-09
+```
+safetyhub-core/              → 도메인 모델 (Device, Worker, Zone, Emergency)
+                             → 도메인 이벤트 (EmergencyDetectedEvent 등)
+                             → 포트 인터페이스 (Repository, EventPublisher)
+
+safetyhub-application/       → UseCase 구현
+  ├── device-control/        → 설비 제어 서비스
+  ├── worker-monitoring/     → 작업자 모니터링 서비스
+  └── emergency-response/    → 긴급 대응 서비스 (Hot Path)
+
+safetyhub-adapter/           → 외부 어댑터
+  ├── adapter-rest/          → REST API (DeviceController, WorkerController, EmergencyController)
+  ├── adapter-websocket/     → WebSocket (STOMP 실시간 통신)
+  ├── adapter-mqtt/          → MQTT (IoT 장치 연결)
+  └── adapter-simulator/     → 시뮬레이터 (개발/테스트용)
+
+safetyhub-infrastructure/    → 인프라 구현
+  ├── persistence/           → JPA Entity, Repository 구현 (MySQL)
+  ├── messaging/             → KafkaEventPublisher
+  └── external/              → Emergency119ApiClient
+
+safetyhub-gateway/           → 통합 게이트웨이
+                             → MessageRouter (Hot/Warm/Cold Path 라우팅)
+
+safetyhub-bootstrap/         → 실행 애플리케이션
+                             → SafetyHubApplication, application.yml
+```
+
+---
+
+**문서 버전:** v1.1
+
+**최종 수정:** 2026-01-13

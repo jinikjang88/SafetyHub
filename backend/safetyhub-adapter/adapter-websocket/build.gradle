@@ -1,0 +1,5 @@
+// adapter-websocket: WebSocket 어댑터 (실시간 대시보드 통신)
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
+}

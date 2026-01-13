@@ -1,0 +1,21 @@
+// safetyhub-application: UseCase 구현
+// 의존성: core
+
+plugins {
+    id 'java-library'
+}
+
+dependencies {
+    // Core 모듈 의존
+    api project(':safetyhub-core')
+}
+
+// 서브 모듈 공통 설정
+subprojects {
+    apply plugin: 'java-library'
+
+    dependencies {
+        // 부모 모듈(application)을 통해 core 의존
+        implementation project(':safetyhub-core')
+    }
+}

@@ -1,0 +1,5 @@
+// external: 외부 API 연동 (119 API, SMS, Push)
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+}

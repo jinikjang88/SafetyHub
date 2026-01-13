@@ -1,0 +1,14 @@
+// safetyhub-gateway: 통합 게이트웨이
+// 모든 프로토콜의 진입점
+
+plugins {
+    id 'java-library'
+}
+
+dependencies {
+    api project(':safetyhub-core')
+    api project(':safetyhub-application')
+
+    // 라우팅 및 필터링
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+}

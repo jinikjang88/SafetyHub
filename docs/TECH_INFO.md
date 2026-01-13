@@ -2,13 +2,14 @@
 
 | 영역 | 기술 | 버전 | 선택 이유 |
 | --- | --- | --- | --- |
-| Framework | Spring Boot + WebFlux | 3.x | 비동기 처리, 고성능 |
-| Language | Java | 21 | Virtual Threads - 대량 동시 연결 처리 |
+| Framework | Spring Boot + WebFlux | 3.3.5 | 비동기 처리, 고성능 |
+| Language | Java | 21 (LTS) | Virtual Threads - 대량 동시 연결 처리 |
+| 빌드 도구 | Gradle | 8.5 | Groovy DSL, 멀티모듈 |
 | 실시간 통신 | Netty + MQTT (HiveMQ) | - | IoT 장치 연결 최적화 |
-| 메시징 | Apache Kafka | - | 이벤트 소싱, 높은 TPS |
-| 캐시 | Redis Cluster | - | 상태 실시간 조회 |
-| DB | PostgreSQL | - | 메인 데이터 저장 |
-| TSDB | TimescaleDB | - | 시계열 데이터 (센서) |
+| 메시징 | Apache Kafka | 3.7.x | 이벤트 소싱, 높은 TPS |
+| 캐시 | Redis | 7.x | 상태 실시간 조회 |
+| DB | MySQL | 8.x | 메인 데이터 저장 |
+| ORM | Spring Data JPA | - | 데이터 영속화 |
 
 ---
 
@@ -89,6 +90,20 @@
 
 ---
 
-**문서 버전:** v1.0
+## Docker Compose 서비스
 
-**최종 수정:** 2026-01-09
+| 서비스 | 이미지 | 포트 | 용도 |
+| --- | --- | --- | --- |
+| mysql | mysql:8.0 | 3306 | 메인 데이터베이스 |
+| redis | redis:7-alpine | 6379 | 캐시/실시간 상태 |
+| zookeeper | confluentinc/cp-zookeeper:7.5.0 | 2181 | Kafka 의존성 |
+| kafka | confluentinc/cp-kafka:7.5.0 | 9092, 29092 | 이벤트 스트림 |
+| hivemq | hivemq/hivemq-ce:2024.3 | 1883, 8083 | MQTT Broker |
+| prometheus | prom/prometheus:v2.47.0 | 9090 | 메트릭 수집 (선택) |
+| grafana | grafana/grafana:10.2.0 | 3000 | 모니터링 대시보드 (선택) |
+
+---
+
+**문서 버전:** v1.1
+
+**최종 수정:** 2026-01-13

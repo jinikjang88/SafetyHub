@@ -1,0 +1,36 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        mavenCentral()
+    }
+}
+
+rootProject.name = 'safetyhub'
+
+// Core Module - 도메인 모델, 이벤트 (의존성 없음)
+include 'safetyhub-core'
+
+// Application Module - UseCase 구현
+include 'safetyhub-application'
+include 'safetyhub-application:device-control'
+include 'safetyhub-application:worker-monitoring'
+include 'safetyhub-application:emergency-response'
+
+// Adapter Module - 외부 어댑터
+include 'safetyhub-adapter'
+include 'safetyhub-adapter:adapter-mqtt'
+include 'safetyhub-adapter:adapter-websocket'
+include 'safetyhub-adapter:adapter-rest'
+include 'safetyhub-adapter:adapter-simulator'
+
+// Infrastructure Module - 인프라 구현
+include 'safetyhub-infrastructure'
+include 'safetyhub-infrastructure:persistence'
+include 'safetyhub-infrastructure:messaging'
+include 'safetyhub-infrastructure:external'
+
+// Gateway Module - 통합 게이트웨이
+include 'safetyhub-gateway'
+
+// Bootstrap Module - 실행 애플리케이션
+include 'safetyhub-bootstrap'
