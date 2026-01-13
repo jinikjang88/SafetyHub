@@ -1,0 +1,5 @@
+// messaging: Kafka 메시징 인프라 구현
+
+dependencies {
+    implementation 'org.springframework.kafka:spring-kafka'
+}

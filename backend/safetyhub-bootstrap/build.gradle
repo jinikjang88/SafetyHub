@@ -1,0 +1,48 @@
+// safetyhub-bootstrap: 실행 애플리케이션
+// 모든 모듈을 조립하여 실행
+
+plugins {
+    id 'org.springframework.boot'
+}
+
+dependencies {
+    // 모든 모듈 의존
+    implementation project(':safetyhub-core')
+    implementation project(':safetyhub-application')
+    implementation project(':safetyhub-application:device-control')
+    implementation project(':safetyhub-application:worker-monitoring')
+    implementation project(':safetyhub-application:emergency-response')
+    implementation project(':safetyhub-adapter')
+    implementation project(':safetyhub-adapter:adapter-rest')
+    implementation project(':safetyhub-adapter:adapter-websocket')
+    implementation project(':safetyhub-adapter:adapter-mqtt')
+    implementation project(':safetyhub-adapter:adapter-simulator')
+    implementation project(':safetyhub-infrastructure')
+    implementation project(':safetyhub-infrastructure:persistence')
+    implementation project(':safetyhub-infrastructure:messaging')
+    implementation project(':safetyhub-infrastructure:external')
+    implementation project(':safetyhub-gateway')
+
+    // Spring Boot Starters
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+    // MySQL
+    runtimeOnly 'com.mysql:mysql-connector-j'
+
+    // DevTools (개발용)
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+
+    // Test
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.testcontainers:mysql'
+    testImplementation 'org.testcontainers:kafka'
+}
+
+bootJar {
+    archiveBaseName = 'safetyhub'
+    archiveVersion = project.version
+}

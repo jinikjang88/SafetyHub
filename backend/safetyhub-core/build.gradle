@@ -1,0 +1,15 @@
+// safetyhub-core: 도메인 모델, 이벤트, 포트 인터페이스
+// 의존성: 없음 (완전 독립)
+
+plugins {
+    id 'java-library'
+}
+
+dependencies {
+    // Core 모듈은 외부 의존성 최소화
+    // Spring Context만 사용 (DI를 위한 어노테이션)
+    implementation 'org.springframework:spring-context'
+
+    // Validation
+    implementation 'jakarta.validation:jakarta.validation-api'
+}

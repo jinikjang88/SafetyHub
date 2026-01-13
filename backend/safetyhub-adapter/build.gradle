@@ -1,0 +1,21 @@
+// safetyhub-adapter: 외부 어댑터
+// 의존성: core, application
+
+plugins {
+    id 'java-library'
+}
+
+dependencies {
+    api project(':safetyhub-core')
+    api project(':safetyhub-application')
+}
+
+// 서브 모듈 공통 설정
+subprojects {
+    apply plugin: 'java-library'
+
+    dependencies {
+        implementation project(':safetyhub-core')
+        implementation project(':safetyhub-application')
+    }
+}

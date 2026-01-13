@@ -1,0 +1,6 @@
+// adapter-mqtt: MQTT 어댑터 (IoT 장치 통신)
+
+dependencies {
+    implementation 'org.springframework.integration:spring-integration-mqtt'
+    implementation 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.5'
+}

@@ -1,0 +1,5 @@
+// adapter-simulator: 시뮬레이터 어댑터 (개발/테스트용 가상 장치)
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter'
+}
