@@ -15,15 +15,37 @@
 | Docker 개발 환경 구성 | 🟢 완료 | P1 | - | MySQL, Redis, Kafka, HiveMQ |
 | CI/CD 파이프라인 | ⬜ 대기 | P1 | - | GitHub Actions |
 
-### Week 3-4: Simulator MVP
+### Week 3-4: Robot Simulator MVP
 
 | 태스크 | 상태 | 우선순위 | 담당 | 비고 |
 | --- | --- | --- | --- | --- |
-| Virtual Robot 구현 | ⬜ 대기 | P0 | - | 기본 로봇 엔티티 |
-| Virtual World (그리드 맵) | ⬜ 대기 | P0 | - | 2D 그리드 |
-| 기본 이벤트 발생 | ⬜ 대기 | P1 | - | 이동/충돌 |
+| RobotWorker 엔티티 구현 | ⬜ 대기 | P0 | - | 상태/스케줄/위치 모델 |
+| Virtual World 구현 | ⬜ 대기 | P0 | - | 2D 그리드 맵, Zone 관리 |
+| 로봇 행동 시뮬레이션 | ⬜ 대기 | P0 | - | 작업/휴식/식사/이동 |
+| A* 경로 탐색 구현 | ⬜ 대기 | P1 | - | PathFinder |
+| 이벤트 생성기 구현 | ⬜ 대기 | P1 | - | 센서/위치/긴급 이벤트 |
 | WebSocket 실시간 통신 | 🟢 완료 | P1 | - | STOMP 설정 완료 |
-| 간단한 대시보드 | ⬜ 대기 | P2 | - | 위치 표시 |
+| 시나리오 엔진 (YAML) | ⬜ 대기 | P1 | - | 시나리오 파싱/실행 |
+| 시뮬레이션 대시보드 | ⬜ 대기 | P2 | - | 실시간 맵/상태 표시 |
+
+#### 로봇 시뮬레이션 상세
+
+```
+Robot Worker 행동 모델:
+├── WORKING (작업)     → 센서 데이터 생성, 위치 업데이트
+├── RESTING (휴식)     → Zone E (휴게실) 이동
+├── EATING (식사)      → Zone F (식당) 이동
+├── MOVING (이동)      → A* 경로 탐색, 실시간 위치 전송
+├── EMERGENCY (긴급)   → SOS/낙상/건강이상 이벤트
+└── EVACUATING (대피)  → Zone H (대피소) 이동
+
+테스트 시나리오:
+├── daily_operation.yaml    → 500대 8시간 정규 운영
+├── fire_emergency.yaml     → 화재 발생 대피 시나리오
+├── worker_fall.yaml        → 작업자 낙상 감지
+├── gas_leak.yaml           → 가스 누출 설비 차단
+└── load_test.yaml          → 10,000대 부하 테스트
+```
 
 ---
 
@@ -126,12 +148,12 @@
 
 | Phase | 기간 | 총 태스크 | 완료 | 진행률 |
 | --- | --- | --- | --- | --- |
-| Phase 1: Foundation | Week 1-4 | 10 | 5 | 50% |
+| Phase 1: Foundation | Week 1-4 | 13 | 5 | 38% |
 | Phase 2: Control System | Week 5-8 | 10 | 0 | 0% |
 | Phase 3: SafetyKit | Week 9-12 | 10 | 0 | 0% |
 | Phase 4: LifeGuard | Week 13-16 | 10 | 0 | 0% |
 | Phase 5: Integration | Week 17-20 | 9 | 0 | 0% |
-| **전체** | **20주** | **49** | **5** | **10%** |
+| **전체** | **20주** | **52** | **5** | **10%** |
 
 ---
 

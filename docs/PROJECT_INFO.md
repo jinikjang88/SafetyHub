@@ -9,6 +9,7 @@ safetyhub/
 │   ├── FLOW.md                     # 통합 시나리오
 │   ├── PRODUCT_LINE_UP.md          # 제품 라인업
 │   ├── PROJECT_INFO.md             # 프로젝트 정보 (본 문서)
+│   ├── ROBOT_SIMULATION.md         # 🆕 로봇 시뮬레이션 시스템
 │   └── TECH_INFO.md                # 기술 스택
 │
 ├── backend/                        # ✅ 구현 완료
@@ -50,10 +51,21 @@ safetyhub/
 │   ├── dashboard/                  # 관제 대시보드
 │   └── mobile-app/                 # React Native 앱
 │
-├── simulator/                      # 📋 예정
-│   ├── robot-simulator/            # 로봇 시뮬레이터
-│   ├── device-simulator/           # SafetyKit 시뮬레이터
-│   └── worker-simulator/           # LifeGuard 시뮬레이터
+├── simulator/                      # 📋 예정 (로봇 시뮬레이션 시스템)
+│   └── robot-simulator/            # 🤖 로봇 시뮬레이터
+│       ├── src/main/java/.../
+│       │   ├── core/               # RobotWorker, RobotState, RobotSchedule
+│       │   ├── world/              # VirtualWorld, GridMap, Zone, PathFinder
+│       │   ├── scenario/           # ScenarioEngine, ScenarioLoader
+│       │   ├── event/              # EventGenerator, SensorDataGenerator
+│       │   └── publisher/          # MQTT/Kafka/WebSocket 발행
+│       └── src/main/resources/
+│           └── scenarios/          # YAML 시나리오 파일
+│               ├── daily_operation.yaml   # 일상 운영 시나리오
+│               ├── fire_emergency.yaml    # 화재 대피 시나리오
+│               ├── worker_fall.yaml       # 낙상 감지 시나리오
+│               ├── gas_leak.yaml          # 가스 누출 시나리오
+│               └── load_test.yaml         # 부하 테스트 시나리오
 │
 ├── hardware/                       # 📋 예정
 │   ├── safetykit/
@@ -95,13 +107,33 @@ safetyhub/
 | **dashboard** | 웹 관제 대시보드 | React 18, TypeScript |
 | **mobile-app** | 모바일 앱 | React Native |
 
-### Simulator 모듈
+### Simulator 모듈 (로봇 시뮬레이션)
+
+> 📄 상세 문서: [ROBOT_SIMULATION.md](ROBOT_SIMULATION.md)
 
 | 모듈 | 설명 | 용도 |
 | --- | --- | --- |
-| **robot-simulator** | 가상 로봇 시뮬레이션 | 대규모 부하 테스트 |
-| **device-simulator** | SafetyKit 가상 장치 | 서버 테스트 |
-| **worker-simulator** | LifeGuard 가상 장치 | 긴급 시나리오 테스트 |
+| **robot-simulator** | 가상 로봇 시뮬레이션 | 대규모 부하 테스트, 시나리오 검증 |
+
+#### Robot Simulator 컴포넌트
+
+| 컴포넌트 | 설명 |
+| --- | --- |
+| **RobotWorker** | 로봇 더미 엔티티 (상태/스케줄/위치) |
+| **VirtualWorld** | 가상 공장 환경 (2D 그리드 맵) |
+| **ScenarioEngine** | YAML 기반 시나리오 실행 엔진 |
+| **EventGenerator** | 센서/위치/긴급 이벤트 생성기 |
+| **PathFinder** | A* 경로 탐색 알고리즘 |
+
+#### 테스트 시나리오
+
+| 시나리오 | 설명 | 검증 항목 |
+| --- | --- | --- |
+| **daily_operation** | 500대 8시간 정규 운영 | 위치 추적, 하트비트 |
+| **fire_emergency** | 화재 발생 → 대피 | 알림 < 3초, 대피 < 10분 |
+| **worker_fall** | 낙상 감지 → 긴급 대응 | 감지 < 1초 |
+| **gas_leak** | 가스 누출 → 설비 차단 | 차단 < 100ms |
+| **load_test** | 10,000대 동시 접속 | 응답 < 100ms |
 
 ### Hardware 모듈
 
@@ -177,6 +209,6 @@ cd backend
 
 ---
 
-**문서 버전:** v1.1
+**문서 버전:** v1.2
 
 **최종 수정:** 2026-01-13
