@@ -1,0 +1,31 @@
+# 가스 누출 시나리오
+# Zone D에서 가스 누출 감지, 설비 차단 및 대피
+
+id: gas_leak
+name: 가스 누출 감지 시나리오
+description: Zone D에서 가스 누출이 감지되어 설비 차단 및 인원 대피를 수행하는 시나리오
+
+robotCount: 200
+durationMinutes: 20
+
+parameters:
+  gasZone: "ZONE_D"
+  shelterZone: "ZONE_H"
+  safetyThreshold: 100  # ms 내 차단 목표
+
+events:
+  # 1분 후 가스 누출 감지
+  - triggerTimeSeconds: 60
+    eventType: GAS_LEAK
+    targetZone: ZONE_D
+    data:
+      gasType: "LPG"
+      concentration: 25.5
+      severity: HIGH
+      message: "Zone D 가스 누출 감지"
+
+  # 5분 후 환기 완료
+  - triggerTimeSeconds: 300
+    eventType: CLEAR_EMERGENCY
+    data:
+      message: "환기 완료, 정상 복귀"

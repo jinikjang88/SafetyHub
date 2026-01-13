@@ -1,0 +1,43 @@
+# 작업자 낙상 감지 시나리오
+# Zone A에서 작업자 낙상 발생, 긴급 대응 테스트
+
+id: worker_fall
+name: 작업자 낙상 감지 시나리오
+description: Zone A에서 작업자가 넘어져 긴급 대응 시스템을 테스트하는 시나리오
+
+robotCount: 100
+durationMinutes: 10
+
+parameters:
+  targetZone: "ZONE_A"
+  medicalZone: "ZONE_G"
+  expectedResponseTime: 3  # 3초 내 감지 목표
+
+events:
+  # 30초 후 낙상 발생
+  - triggerTimeSeconds: 30
+    eventType: WORKER_FALL
+    targetZone: ZONE_A
+    data:
+      accelerometer:
+        x: 0.2
+        y: 0.1
+        z: 0.3
+      impactForce: 2.5
+      message: "작업자 낙상 감지"
+
+  # 1분 후 추가 낙상 이벤트
+  - triggerTimeSeconds: 90
+    eventType: WORKER_FALL
+    targetZone: ZONE_B
+    data:
+      message: "Zone B 작업자 낙상 감지"
+
+  # 2분 후 건강 이상 감지
+  - triggerTimeSeconds: 120
+    eventType: HEALTH_EMERGENCY
+    targetZone: ZONE_A
+    data:
+      heartRate: 180
+      temperature: 39.5
+      message: "심박수 이상 감지"

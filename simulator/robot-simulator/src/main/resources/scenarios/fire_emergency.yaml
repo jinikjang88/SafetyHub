@@ -1,0 +1,32 @@
+# 화재 대피 시나리오
+# Zone C에서 화재 발생, 전원 대피소로 대피
+
+id: fire_emergency
+name: 화재 발생 대피 시나리오
+description: Zone C에서 화재가 발생하여 전원이 Zone H 대피소로 대피하는 시나리오
+
+robotCount: 500
+durationMinutes: 30
+
+parameters:
+  startTime: "10:00"
+  fireZone: "ZONE_C"
+  shelterZone: "ZONE_H"
+  evacuationTimeLimit: 600  # 10분 내 대피 완료 목표
+
+events:
+  # 1분 후 화재 발생
+  - triggerTimeSeconds: 60
+    eventType: FIRE
+    targetZone: ZONE_C
+    data:
+      severity: CRITICAL
+      temperature: 85.0
+      smokeLevel: HIGH
+      message: "Zone C 화재 감지"
+
+  # 15분 후 화재 진압 완료
+  - triggerTimeSeconds: 900
+    eventType: CLEAR_EMERGENCY
+    data:
+      message: "화재 진압 완료"

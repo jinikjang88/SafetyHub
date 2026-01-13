@@ -1,0 +1,32 @@
+# 일상 운영 시나리오
+# 500대 로봇이 8시간 동안 정규 운영 수행
+
+id: daily_operation
+name: 일상 운영 시나리오
+description: 500대 로봇이 8시간 동안 정상적인 작업, 휴식, 식사를 수행하는 시나리오
+
+robotCount: 500
+durationMinutes: 480  # 8시간
+
+parameters:
+  startTime: "08:00"
+  workZones: ["ZONE_A", "ZONE_B", "ZONE_C", "ZONE_D"]
+  restZone: "ZONE_E"
+  diningZone: "ZONE_F"
+  locationUpdateInterval: 10
+  heartbeatInterval: 50
+
+events:
+  # 점심 시간 (12:00 = 4시간 후)
+  - triggerTimeSeconds: 14400
+    eventType: LUNCH_BREAK
+    targetZone: ZONE_F
+    data:
+      message: "점심 시간 시작"
+
+  # 오후 휴식 (15:00 = 7시간 후)
+  - triggerTimeSeconds: 25200
+    eventType: BREAK_TIME
+    targetZone: ZONE_E
+    data:
+      message: "오후 휴식 시작"

@@ -1,0 +1,44 @@
+# 부하 테스트 시나리오
+# 10,000대 로봇 동시 운영으로 시스템 성능 테스트
+
+id: load_test
+name: 대규모 부하 테스트 시나리오
+description: 10,000대 로봇이 동시에 운영되며 시스템 성능을 검증하는 시나리오
+
+robotCount: 10000
+durationMinutes: 60
+
+parameters:
+  startTime: "08:00"
+  locationUpdateInterval: 5   # 더 빈번한 위치 업데이트
+  heartbeatInterval: 20       # 더 빈번한 하트비트
+  expectedTps: 12000          # 예상 TPS
+  maxResponseTime: 100        # 최대 응답 시간 (ms)
+
+events:
+  # 10분 후 첫 번째 스트레스 이벤트
+  - triggerTimeSeconds: 600
+    eventType: HEALTH_EMERGENCY
+    data:
+      count: 10
+      message: "동시 다발적 건강 이상 감지"
+
+  # 20분 후 두 번째 스트레스 이벤트
+  - triggerTimeSeconds: 1200
+    eventType: FIRE
+    targetZone: ZONE_C
+    data:
+      message: "화재 발생 - 대규모 대피 테스트"
+
+  # 30분 후 긴급 상황 해제
+  - triggerTimeSeconds: 1800
+    eventType: CLEAR_EMERGENCY
+    data:
+      message: "긴급 상황 해제"
+
+  # 40분 후 추가 낙상 이벤트들
+  - triggerTimeSeconds: 2400
+    eventType: WORKER_FALL
+    data:
+      count: 5
+      message: "동시 다발적 낙상 감지"
