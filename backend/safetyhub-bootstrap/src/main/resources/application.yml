@@ -1,0 +1,105 @@
+spring:
+  application:
+    name: safetyhub
+
+  # DataSource (MySQL)
+  datasource:
+    url: jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:3306}/${MYSQL_DATABASE:safetyhub}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul
+    username: ${MYSQL_USERNAME:safetyhub}
+    password: ${MYSQL_PASSWORD:safetyhub123}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      idle-timeout: 300000
+      connection-timeout: 20000
+
+  # JPA
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: ${JPA_SHOW_SQL:false}
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQLDialect
+
+  # Redis
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+
+  # Kafka
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    consumer:
+      group-id: safetyhub-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+
+  # Jackson
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    deserialization:
+      fail-on-unknown-properties: false
+
+# Server
+server:
+  port: ${SERVER_PORT:8080}
+
+# Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+
+# Logging
+logging:
+  level:
+    com.safetyhub: ${LOG_LEVEL:DEBUG}
+    org.springframework.web: INFO
+    org.hibernate.SQL: ${HIBERNATE_SQL_LOG:DEBUG}
+
+# MQTT
+mqtt:
+  broker:
+    url: tcp://${MQTT_HOST:localhost}:${MQTT_PORT:1883}
+    client-id: safetyhub-server
+    username: ${MQTT_USERNAME:}
+    password: ${MQTT_PASSWORD:}
+  topics:
+    devices: safetyhub/devices/#
+    workers: safetyhub/workers/#
+    emergencies: safetyhub/emergencies/#
+
+---
+# Docker Profile
+spring:
+  config:
+    activate:
+      on-profile: docker
+
+  datasource:
+    url: jdbc:mysql://mysql:3306/safetyhub?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul
+
+  data:
+    redis:
+      host: redis
+
+  kafka:
+    bootstrap-servers: kafka:9092
+
+mqtt:
+  broker:
+    url: tcp://hivemq:1883
