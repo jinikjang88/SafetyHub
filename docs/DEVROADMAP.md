@@ -157,7 +157,19 @@ Robot Worker 행동 모델:
 
 ---
 
-## 최근 완료 항목 (2026-01-13)
+## 최근 완료 항목 (2026-01-14)
+
+### 의존성 수정 (fix: 누락된 Gradle 의존성 추가)
+- ✅ `messaging` 모듈: `spring-boot-starter-json` 추가 - ObjectMapper 사용을 위한 Jackson 의존성
+- ✅ `adapter-rest` 모듈: application UseCase 모듈 의존성 추가
+  - `device-control`, `worker-monitoring`, `emergency-response`
+- ✅ `adapter-mqtt` 모듈: `device-control` 의존성 추가 - DeviceControlUseCase 사용
+- ✅ `adapter-simulator` 모듈: `device-control` 의존성 추가 - DeviceControlUseCase 사용
+- ✅ `bootstrap` 모듈: `testcontainers:junit-jupiter` 추가 - JUnit5 통합 테스트 지원
+
+---
+
+## 완료 항목 (2026-01-13)
 
 - ✅ Gradle 멀티모듈 프로젝트 구조 (6개 모듈)
 - ✅ 클린 아키텍처 레이어 분리
@@ -181,6 +193,6 @@ Robot Worker 행동 모델:
 
 ---
 
-**문서 버전:** v1.1
+**문서 버전:** v1.2
 
-**최종 수정:** 2026-01-13
+**최종 수정:** 2026-01-14
