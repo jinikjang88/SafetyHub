@@ -2,4 +2,7 @@
 
 dependencies {
     implementation 'org.springframework.kafka:spring-kafka'
+
+    // Jackson for JSON serialization (ObjectMapper)
+    implementation 'org.springframework.boot:spring-boot-starter-json'
 }
