@@ -6,4 +6,9 @@ dependencies {
 
     // OpenAPI 문서화
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0'
+
+    // Application UseCase 의존성
+    implementation project(':safetyhub-application:device-control')
+    implementation project(':safetyhub-application:worker-monitoring')
+    implementation project(':safetyhub-application:emergency-response')
 }

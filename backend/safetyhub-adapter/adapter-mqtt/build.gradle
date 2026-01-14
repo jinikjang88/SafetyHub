@@ -3,4 +3,7 @@
 dependencies {
     implementation 'org.springframework.integration:spring-integration-mqtt'
     implementation 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.5'
+
+    // Application UseCase 의존성
+    implementation project(':safetyhub-application:device-control')
 }

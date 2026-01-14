@@ -2,4 +2,7 @@
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter'
+
+    // Application UseCase 의존성
+    implementation project(':safetyhub-application:device-control')
 }
