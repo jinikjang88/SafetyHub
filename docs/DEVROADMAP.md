@@ -15,18 +15,18 @@
 | Docker 개발 환경 구성 | 🟢 완료 | P1 | - | MySQL, Redis, Kafka, HiveMQ |
 | CI/CD 파이프라인 | ⬜ 대기 | P1 | - | GitHub Actions |
 
-### Week 3-4: Robot Simulator MVP
+### Week 3-4: Robot Simulator MVP ✅ 완료
 
 | 태스크 | 상태 | 우선순위 | 담당 | 비고 |
 | --- | --- | --- | --- | --- |
-| RobotWorker 엔티티 구현 | ⬜ 대기 | P0 | - | 상태/스케줄/위치 모델 |
-| Virtual World 구현 | ⬜ 대기 | P0 | - | 2D 그리드 맵, Zone 관리 |
-| 로봇 행동 시뮬레이션 | ⬜ 대기 | P0 | - | 작업/휴식/식사/이동 |
-| A* 경로 탐색 구현 | ⬜ 대기 | P1 | - | PathFinder |
-| 이벤트 생성기 구현 | ⬜ 대기 | P1 | - | 센서/위치/긴급 이벤트 |
+| RobotWorker 엔티티 구현 | 🟢 완료 | P0 | - | 상태/스케줄/위치/건강/배터리 모델 |
+| Virtual World 구현 | 🟢 완료 | P0 | - | 2D 그리드 맵, 8개 Zone 관리 |
+| 로봇 행동 시뮬레이션 | 🟢 완료 | P0 | - | 작업/휴식/식사/이동/긴급/대피 |
+| A* 경로 탐색 구현 | 🟢 완료 | P1 | - | PathFinder 알고리즘 |
+| 이벤트 생성기 구현 | 🟢 완료 | P1 | - | 센서/위치/긴급 이벤트 |
 | WebSocket 실시간 통신 | 🟢 완료 | P1 | - | STOMP 설정 완료 |
-| 시나리오 엔진 (YAML) | ⬜ 대기 | P1 | - | 시나리오 파싱/실행 |
-| 시뮬레이션 대시보드 | ⬜ 대기 | P2 | - | 실시간 맵/상태 표시 |
+| 시나리오 엔진 | 🟢 완료 | P1 | - | 5개 시나리오 (daily/fire/fall/gas/load) |
+| 시뮬레이션 대시보드 | ⬜ 대기 | P2 | - | 실시간 맵/상태 표시 (Frontend) |
 
 #### 로봇 시뮬레이션 상세
 
@@ -148,16 +148,43 @@ Robot Worker 행동 모델:
 
 | Phase | 기간 | 총 태스크 | 완료 | 진행률 |
 | --- | --- | --- | --- | --- |
-| Phase 1: Foundation | Week 1-4 | 13 | 5 | 38% |
+| Phase 1: Foundation | Week 1-4 | 13 | 12 | 92% |
 | Phase 2: Control System | Week 5-8 | 10 | 0 | 0% |
 | Phase 3: SafetyKit | Week 9-12 | 10 | 0 | 0% |
 | Phase 4: LifeGuard | Week 13-16 | 10 | 0 | 0% |
 | Phase 5: Integration | Week 17-20 | 9 | 0 | 0% |
-| **전체** | **20주** | **52** | **5** | **10%** |
+| **전체** | **20주** | **52** | **12** | **23%** |
 
 ---
 
-## 최근 완료 항목 (2026-01-13)
+## 최근 완료 항목 (2026-01-14)
+
+### 로봇 시뮬레이터 MVP 구현 (feat: Robot Simulator MVP)
+- ✅ **RobotWorker 엔티티**: 상태(7종), 스케줄, 위치, 건강상태, 배터리 모델
+- ✅ **Virtual World**: 100x50 그리드 맵, 8개 구역(Zone A-H)
+  - 작업장(A,B,D), 위험구역(C), 휴게실(E), 식당(F), 의무실(G), 대피소(H)
+- ✅ **로봇 행동 시뮬레이션**: WORKING/RESTING/EATING/MOVING/EMERGENCY/EVACUATING
+- ✅ **A* 경로 탐색**: PathFinder 알고리즘 구현
+- ✅ **이벤트 생성기**: 위치/상태/센서/긴급 이벤트 자동 생성
+- ✅ **시나리오 엔진**: 5개 시나리오 지원
+  - `daily_operation` - 일상 운영 (500대, 8시간)
+  - `fire_emergency` - 화재 대피 시나리오
+  - `worker_fall` - 작업자 낙상 감지
+  - `gas_leak` - 가스 누출 설비 차단
+  - `load_test` - 부하 테스트 (10,000대)
+- ✅ **REST API 컨트롤러**: `/api/v1/simulation/*` 엔드포인트
+
+### 의존성 수정 (fix: 누락된 Gradle 의존성 추가)
+- ✅ `messaging` 모듈: `spring-boot-starter-json` 추가 - ObjectMapper 사용을 위한 Jackson 의존성
+- ✅ `adapter-rest` 모듈: application UseCase 모듈 의존성 추가
+  - `device-control`, `worker-monitoring`, `emergency-response`
+- ✅ `adapter-mqtt` 모듈: `device-control` 의존성 추가 - DeviceControlUseCase 사용
+- ✅ `adapter-simulator` 모듈: `device-control`, `spring-boot-starter-web` 추가
+- ✅ `bootstrap` 모듈: `testcontainers:junit-jupiter` 추가 - JUnit5 통합 테스트 지원
+
+---
+
+## 완료 항목 (2026-01-13)
 
 - ✅ Gradle 멀티모듈 프로젝트 구조 (6개 모듈)
 - ✅ 클린 아키텍처 레이어 분리
@@ -181,6 +208,6 @@ Robot Worker 행동 모델:
 
 ---
 
-**문서 버전:** v1.1
+**문서 버전:** v1.3
 
-**최종 수정:** 2026-01-13
+**최종 수정:** 2026-01-14
