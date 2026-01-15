@@ -1,0 +1,40 @@
+server:
+  port: 8090
+
+spring:
+  application:
+    name: robot-simulator
+
+# MQTT 설정
+mqtt:
+  broker-url: tcp://localhost:1883
+  client-id: robot-simulator
+  topic-prefix: safetyhub/simulator
+
+# Kafka 설정
+kafka:
+  bootstrap-servers: localhost:9092
+  topic-prefix: safetyhub-simulator
+
+# WebSocket 설정
+websocket:
+  destination-prefix: /topic/simulator
+
+# 시뮬레이터 설정
+simulator:
+  default-scenario: daily_operation
+  world:
+    width: 100
+    height: 100
+    name: "Virtual Factory"
+  event:
+    location-update-interval: 10
+    heartbeat-interval: 50
+
+# 로깅 설정
+logging:
+  level:
+    com.safetyhub.simulator: DEBUG
+    org.springframework.messaging: INFO
+    org.eclipse.paho: WARN
+    org.apache.kafka: WARN

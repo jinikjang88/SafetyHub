@@ -1,0 +1,9 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        maven { url 'https://repo.maven.apache.org/maven2/' }
+        mavenCentral()
+    }
+}
+
+rootProject.name = 'robot-simulator'
