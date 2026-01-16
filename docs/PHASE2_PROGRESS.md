@@ -727,6 +727,111 @@ Phase 2는 범위가 크므로, 다음 순서로 진행을 제안합니다:
 
 ---
 
+## 📊 Phase 2 - Stage 2 진행 상황
+
+### 2026-01-16 PM - 6️⃣ 분배 알고리즘 구현 (Round-Robin) 완료 ✅
+
+**생성 파일:**
+
+#### 도메인 모델 (safetyhub-core)
+- `/backend/safetyhub-core/src/main/java/com/safetyhub/core/domain/Task.java`
+- `/backend/safetyhub-core/src/main/java/com/safetyhub/core/domain/TaskStatus.java`
+- `/backend/safetyhub-core/src/main/java/com/safetyhub/core/domain/TaskPriority.java`
+- `/backend/safetyhub-core/src/test/java/com/safetyhub/core/domain/TaskTest.java`
+
+#### 작업 분배 시스템 (safetyhub-application/task-dispatch)
+- `/backend/safetyhub-application/task-dispatch/src/main/java/com/safetyhub/application/dispatch/TaskQueue.java`
+- `/backend/safetyhub-application/task-dispatch/src/main/java/com/safetyhub/application/dispatch/PriorityTaskQueue.java`
+- `/backend/safetyhub-application/task-dispatch/src/main/java/com/safetyhub/application/dispatch/DispatchStrategy.java`
+- `/backend/safetyhub-application/task-dispatch/src/main/java/com/safetyhub/application/dispatch/RoundRobinStrategy.java`
+- `/backend/safetyhub-application/task-dispatch/src/main/java/com/safetyhub/application/dispatch/SimpleRobotInfo.java`
+- `/backend/safetyhub-application/task-dispatch/src/main/java/com/safetyhub/application/dispatch/TaskDispatcher.java`
+- `/backend/safetyhub-application/task-dispatch/src/test/java/com/safetyhub/application/dispatch/PriorityTaskQueueTest.java`
+- `/backend/safetyhub-application/task-dispatch/src/test/java/com/safetyhub/application/dispatch/RoundRobinStrategyTest.java`
+- `/backend/safetyhub-application/task-dispatch/src/test/java/com/safetyhub/application/dispatch/TaskDispatcherTest.java`
+
+**구현 내용:**
+
+1. **Task 도메인 모델**
+   - 불변 객체 설계 (final fields, Builder 패턴)
+   - 작업 상태 전이 메서드 (assign, start, complete, fail, cancel)
+   - 대기 시간 및 실행 시간 계산
+   - 우선순위 승격 메커니즘
+   - TaskType enum (8가지 작업 유형)
+
+2. **TaskStatus Enum**
+   - PENDING, ASSIGNED, IN_PROGRESS, COMPLETED, FAILED, CANCELLED
+   - 상태 체크 유틸리티 메서드 (isTerminal, isActive, isPending)
+
+3. **TaskPriority Enum**
+   - CRITICAL, HIGH, NORMAL, LOW (4단계 우선순위)
+   - Hot/Warm/Cold Path 판별 메서드
+   - 대기 시간 기반 우선순위 승격 로직
+   - 승격 임계값: LOW(2시간), NORMAL(1시간)
+
+4. **TaskQueue 인터페이스 및 구현**
+   - PriorityBlockingQueue 기반 우선순위 큐
+   - 대기 시간 고려한 동적 우선순위 정렬
+   - 스레드 안전성 보장 (ConcurrentHashMap)
+   - 최대 큐 크기 제한 (DoS 방지, 기본 10000)
+   - 작업 추가/제거/조회 기능
+
+5. **DispatchStrategy 인터페이스**
+   - 전략 패턴으로 다양한 분배 알고리즘 지원
+   - RobotInfo 인터페이스 정의 (로봇 정보 DTO)
+   - 거리 계산, 가용성 체크 메서드
+
+6. **RoundRobinStrategy 구현**
+   - 순차적 작업 할당 (공평한 분배)
+   - AtomicInteger로 스레드 안전성 보장
+   - 사용 가능한 로봇만 필터링
+   - 순환 인덱스 관리
+
+7. **SimpleRobotInfo 구현**
+   - 작업 분배에 필요한 로봇 정보 DTO
+   - 가용성 체크 기준:
+     - 상태: WORKING 또는 RESTING
+     - 배터리: 20% 이상
+     - 작업 부하: 5개 미만
+   - 유클리드 거리 계산
+
+8. **TaskDispatcher 서비스**
+   - 작업 제출 및 큐 관리
+   - 분배 전략 기반 작업 할당
+   - 작업 상태 추적 (대기/할당/완료)
+   - 통계 수집 (제출/할당/완료/실패/취소)
+   - 성공률 및 할당률 계산
+
+**보안 조치:**
+- ✅ 입력 검증: null 체크, 빈 문자열 체크, 상태 검증
+- ✅ 큐 크기 제한 (10000개) - DoS 공격 방지
+- ✅ 불변 객체 패턴 - 스레드 안전성
+- ✅ 스레드 안전성: AtomicInteger, ConcurrentHashMap, PriorityBlockingQueue
+- ✅ 상태 전이 검증: IllegalStateException
+- ✅ 중복 작업 방지
+
+**설계 패턴:**
+- Port & Adapter 패턴: 도메인과 인프라 분리
+- 전략 패턴: 다양한 분배 알고리즘 지원
+- 빌더 패턴: 복잡한 객체 생성
+- 불변 객체 패턴: 상태 안전성
+
+**테스트 커버리지:**
+- 총 **75개** 테스트 케이스 작성
+- Task 도메인 모델 테스트: 25개
+- PriorityTaskQueue 테스트: 18개
+- RoundRobinStrategy 테스트: 12개
+- TaskDispatcher 통합 테스트: 20개
+- 스레드 안전성 테스트 포함
+
+**성능 고려사항:**
+- PriorityBlockingQueue: O(log n) 삽입/삭제
+- ConcurrentHashMap: O(1) 조회
+- 대기 시간 기반 우선순위 승격으로 작업 starvation 방지
+- 스레드 안전한 동시 처리 지원
+
+---
+
 ## 📋 Stage 2 작업 계획 (Week 7-8: Task Dispatch)
 
 > **작성일:** 2026-01-16
@@ -741,22 +846,22 @@ Phase 2는 범위가 크므로, 다음 순서로 진행을 제안합니다:
 
 #### 작업 큐 관리
 ```
-[ ] Priority Queue 구현
+[✅] Priority Queue 구현 ✅ 완료
     - 우선순위 기반 작업 대기열
     - 긴급 작업 우선 처리
 
-[ ] Task Entity 모델
+[✅] Task Entity 모델 ✅ 완료
     - 작업 정보 구조 설계 (ID, 타입, 위치, 우선순위)
     - 작업 상태 관리 (PENDING, ASSIGNED, IN_PROGRESS, COMPLETED)
 
-[ ] 우선순위 정책
+[✅] 우선순위 정책 ✅ 완료
     - 긴급도 기반 우선순위
     - 작업 대기 시간 고려
 ```
 
 #### 분배 전략
 ```
-[ ] Round-Robin 분배 (P0 - 필수)
+[✅] Round-Robin 분배 (P0 - 필수) ✅ 완료
     - 로봇에 순차적으로 작업 할당
     - 가장 단순한 분배 방식
 
@@ -1020,9 +1125,10 @@ Phase 2는 범위가 크므로, 다음 순서로 진행을 제안합니다:
 - **다음 세션 시작점:** Stage 2 - 6️⃣ 분배 알고리즘 구현부터 시작
 
 ### 세션 이력
-- **Session 1 (2026-01-16):** Phase 2 계획 수립 및 Stage 1 완료
+- **Session 1 (2026-01-16 AM):** Phase 2 계획 수립 및 Stage 1 완료
+- **Session 2 (2026-01-16 PM):** Stage 2 - Round-Robin 분배 알고리즘 구현 완료
 
 ---
 
-**문서 버전:** v1.1
-**최종 업데이트:** 2026-01-16 (Stage 2 계획 추가)
+**문서 버전:** v1.2
+**최종 업데이트:** 2026-01-16 (Stage 2 - Round-Robin 구현 완료)
