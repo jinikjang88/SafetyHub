@@ -380,6 +380,82 @@ Phase 2는 범위가 크므로, 다음 순서로 진행을 제안합니다:
 - 페이로드 크기 검증 (2개)
 - MessageConversionException 테스트 (4개)
 
+#### 03:00 - 1-3. MessageRouter 개선 (Hot/Warm/Cold Path 분리) 완료 ✅
+
+**생성 파일:**
+- `/backend/safetyhub-core/src/main/java/com/safetyhub/core/gateway/MessageHandler.java`
+- `/backend/safetyhub-core/src/main/java/com/safetyhub/core/gateway/MessageHandlingException.java`
+- `/backend/safetyhub-gateway/src/main/java/com/safetyhub/gateway/ImprovedMessageRouter.java`
+- `/backend/safetyhub-gateway/src/main/java/com/safetyhub/gateway/handler/HotPathHandler.java`
+- `/backend/safetyhub-gateway/src/main/java/com/safetyhub/gateway/handler/WarmPathHandler.java`
+- `/backend/safetyhub-gateway/src/main/java/com/safetyhub/gateway/handler/ColdPathHandler.java`
+- `/backend/safetyhub-gateway/src/test/java/com/safetyhub/gateway/ImprovedMessageRouterTest.java`
+
+**구현 내용:**
+
+1. **MessageHandler 인터페이스**
+   - 함수형 인터페이스 (`@FunctionalInterface`)
+   - `handle(MessageEnvelope envelope)`: 메시지 처리 메서드
+   - Hot/Warm/Cold Path 핸들러 추상화
+
+2. **MessageHandlingException**
+   - 메시지 처리 실패 시 발생하는 커스텀 예외
+   - Path 정보 포함 (HOT/WARM/COLD)
+   - 원인 예외 체이닝
+
+3. **ImprovedMessageRouter (핵심)**
+   - 우선순위 기반 메시지 라우팅
+   - Hot Path (CRITICAL, HIGH): 동기, < 10ms
+   - Warm Path (NORMAL): 동기, < 500ms
+   - Cold Path (LOW): 비동기, 응답 시간 제약 없음
+   - 전략 패턴: 핸들러 교체 가능
+   - 성능 모니터링: 목표 시간 초과 경고 로깅
+
+4. **HotPathHandler (긴급 처리)**
+   - 긴급 정지, 충돌 회피, 119 신고
+   - In-Memory 처리 (Redis)
+   - DB 접근 최소화
+   - 빠른 실패 (Fail-Fast)
+
+5. **WarmPathHandler (일반 처리)**
+   - 태스크 분배, 경로 계산, 알림 발송
+   - DB 읽기/쓰기 허용
+   - Redis 캐시 활용
+   - 복잡한 비즈니스 로직
+
+6. **ColdPathHandler (배치 처리)**
+   - 로그 저장, 통계 분석, 리포팅
+   - 비동기 처리
+   - 배치 최적화
+   - 에러가 메인 플로우에 영향 없음
+
+**보안 조치:**
+- ✅ 입력 검증: null 체크, 핸들러 검증
+- ✅ 예외 처리: 민감정보 노출 방지
+- ✅ 스레드 안전성: 불변 객체, ExecutorService
+- ✅ 리소스 관리: shutdown() 메서드로 정리
+- ✅ 에러 격리: Cold Path 에러가 메인 플로우에 영향 없음
+
+**설계 패턴:**
+- 전략 패턴: Path별 핸들러 교체 가능
+- 템플릿 메서드 패턴: 공통 로직 재사용
+- 의존성 주입: 생성자 주입으로 느슨한 결합
+
+**성능 최적화:**
+- Hot Path: In-Memory 처리, 최소 로직
+- Warm Path: DB 접근 허용, 캐시 활용
+- Cold Path: 비동기 처리, 별도 스레드 풀
+- 성능 모니터링: 목표 시간 초과 경고
+
+**테스트 커버리지:**
+- 총 18개 테스트 케이스 작성
+- Hot Path 라우팅 (3개)
+- Warm Path 라우팅 (2개)
+- Cold Path 라우팅 (2개)
+- 입력 검증 (4개)
+- 성능 테스트 (2개)
+- MessageHandlingException (4개)
+
 ---
 
 ## 🔗 참고 문서
