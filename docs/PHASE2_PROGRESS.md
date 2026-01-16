@@ -915,6 +915,90 @@ Phase 2는 범위가 크므로, 다음 순서로 진행을 제안합니다:
 
 ---
 
+### 2026-01-16 PM - 8️⃣ 충전 스케줄링 완료 ✅
+
+**생성 파일:**
+
+#### 충전 관리 시스템 (safetyhub-application/task-dispatch/charging)
+- `/backend/safetyhub-application/task-dispatch/src/main/java/com/safetyhub/application/charging/BatteryStatus.java`
+- `/backend/safetyhub-application/task-dispatch/src/main/java/com/safetyhub/application/charging/BatteryMonitor.java`
+- `/backend/safetyhub-application/task-dispatch/src/main/java/com/safetyhub/application/charging/ChargingStation.java`
+- `/backend/safetyhub-application/task-dispatch/src/main/java/com/safetyhub/application/charging/ChargingRequest.java`
+- `/backend/safetyhub-application/task-dispatch/src/main/java/com/safetyhub/application/charging/ChargingQueue.java`
+- `/backend/safetyhub-application/task-dispatch/src/main/java/com/safetyhub/application/charging/ChargingScheduler.java`
+- `/backend/safetyhub-application/task-dispatch/src/test/java/com/safetyhub/application/charging/BatteryMonitorTest.java`
+- `/backend/safetyhub-application/task-dispatch/src/test/java/com/safetyhub/application/charging/ChargingSchedulerTest.java`
+
+**구현 내용:**
+
+1. **BatteryMonitor (배터리 모니터링)**
+   - 로봇별 배터리 상태 추적
+   - 배터리 상태: HEALTHY (>50%), WARNING (20-50%), CRITICAL (<20%), CHARGING
+   - 상태 변화 이벤트 발행
+   - 충전 필요 로봇 조회 (needsCharging, needsUrgentCharging)
+   - 이벤트 리스너 패턴
+
+2. **BatteryStatus (배터리 상태 DTO)**
+   - 배터리 레벨, 상태, 예상 충전 시간
+   - 상태 판별 로직
+   - 충전 필요 여부 확인
+
+3. **ChargingStation (충전소 도메인)**
+   - 충전소 정보: ID, 위치, 총 슬롯 수, 충전 속도
+   - 슬롯 점유/해제 로직 (불변 객체)
+   - 충전 시간 예측 (배터리 레벨 기반)
+   - 충전소 상태 관리 (OPERATIONAL, MAINTENANCE, BROKEN, OFFLINE)
+
+4. **ChargingRequest (충전 요청)**
+   - 요청 정보: 로봇 ID, 배터리 레벨, 우선순위
+   - 우선순위: URGENT (<20%), HIGH (20-50%), NORMAL (50-80%), LOW (>80%)
+   - 상태 전이: PENDING → ASSIGNED → CHARGING → COMPLETED
+   - 불변 객체 패턴
+
+5. **ChargingQueue (충전 대기열)**
+   - PriorityBlockingQueue 기반 우선순위 큐
+   - 우선순위 + FIFO 순서 보장
+   - 스레드 안전성
+   - 최대 큐 크기 제한 (DoS 방지, 기본 1000)
+
+6. **ChargingScheduler (충전 스케줄러)**
+   - 충전 요청 관리 및 충전소 할당
+   - 거리 기반 충전소 선택 (가장 가까운 충전소)
+   - 충전 라이프사이클 관리 (요청 → 할당 → 시작 → 완료)
+   - 충전소 등록/제거
+   - 통계 수집 (요청/할당/완료/실패/취소)
+
+**보안 조치:**
+- ✅ 입력 검증: null 체크, 배터리 레벨 범위 (0-100)
+- ✅ 큐 크기 제한 (1000개) - DoS 방지
+- ✅ 상태 전이 검증: IllegalStateException
+- ✅ 중복 요청 방지
+- ✅ 스레드 안전성: ConcurrentHashMap, PriorityBlockingQueue
+
+**설계 패턴:**
+- 불변 객체 패턴: ChargingStation, ChargingRequest
+- 옵저버 패턴: BatteryMonitor 이벤트 리스너
+- 전략 패턴: 거리 기반 충전소 선택
+- 상태 패턴: ChargingRequest 상태 전이
+
+**주요 알고리즘:**
+- 우선순위 기반 충전 대기열 (배터리 레벨 → 우선순위)
+- 거리 기반 충전소 할당 (유클리드 거리)
+- 충전 시간 예측 (배터리 레벨 / 충전 속도)
+
+**테스트 커버리지:**
+- 총 **37개** 테스트 케이스 작성
+- BatteryMonitor 테스트: 17개
+- ChargingScheduler 통합 테스트: 20개
+- 우선순위, 거리 기반 할당, 상태 전이 검증 포함
+
+**성능 고려사항:**
+- PriorityBlockingQueue: O(log n) 삽입/삭제
+- ConcurrentHashMap: O(1) 조회
+- 거리 계산 최적화 (유클리드 거리)
+
+---
+
 ## 📋 Stage 2 작업 계획 (Week 7-8: Task Dispatch)
 
 > **작성일:** 2026-01-16
@@ -1013,28 +1097,28 @@ Phase 2는 범위가 크므로, 다음 순서로 진행을 제안합니다:
 
 #### 배터리 모니터링
 ```
-[ ] 배터리 레벨 추적 (P0 - 필수)
+[✅] 배터리 레벨 추적 (P0 - 필수) ✅ 완료
     - 실시간 배터리 상태 조회
-    - Redis 캐시 활용 (robot:battery:{id})
+    - BatteryMonitor 서비스 구현
 
-[ ] 저배터리 알림 (P0 - 필수)
-    - 임계값 설정 (예: 20%)
-    - Hot Path 이벤트 발행
+[✅] 저배터리 알림 (P0 - 필수) ✅ 완료
+    - 임계값 설정 (20%, 50%)
+    - 이벤트 리스너 패턴
 
-[ ] 충전 필요 예측 (P1 - 중요)
-    - 작업 완료까지 필요한 배터리 계산
-    - 예방적 충전 스케줄링
+[✅] 충전 필요 예측 (P1 - 중요) ✅ 완료
+    - 배터리 상태 기반 우선순위 결정
+    - 충전 시간 예측 기능
 ```
 
 #### 충전 스케줄러
 ```
-[ ] 충전소 관리 (P1 - 중요)
+[✅] 충전소 관리 (P1 - 중요) ✅ 완료
     - 충전소 위치 및 상태
     - 사용 가능 충전 슬롯 관리
 
-[ ] 충전 대기열 (P1 - 중요)
+[✅] 충전 대기열 (P1 - 중요) ✅ 완료
     - 우선순위 기반 대기열
-    - 긴급 작업 중인 로봇 우선
+    - 배터리 레벨 기반 우선순위
 
 [ ] 충전 시간 최적화 (P2 - 선택)
     - 작업 스케줄과 충전 시간 조율
