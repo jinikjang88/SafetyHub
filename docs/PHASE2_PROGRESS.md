@@ -538,6 +538,145 @@ Phase 2는 범위가 크므로, 다음 순서로 진행을 제안합니다:
 - 입력 검증 (3개)
 - 메시지 변환 (2개)
 
+#### 05:00 - 1-5. Redis 캐시 서비스 기본 구현 완료 ✅
+
+**생성 파일:**
+- `/backend/safetyhub-infrastructure/persistence/src/main/java/com/safetyhub/infrastructure/cache/CacheService.java`
+- `/backend/safetyhub-infrastructure/persistence/src/main/java/com/safetyhub/infrastructure/cache/CacheKey.java`
+- `/backend/safetyhub-infrastructure/persistence/src/main/java/com/safetyhub/infrastructure/cache/CacheTTL.java`
+- `/backend/safetyhub-infrastructure/persistence/src/main/java/com/safetyhub/infrastructure/cache/redis/RedisCacheService.java`
+- `/backend/safetyhub-infrastructure/persistence/src/main/java/com/safetyhub/infrastructure/cache/redis/CacheSerializationException.java`
+- `/backend/safetyhub-infrastructure/persistence/src/main/java/com/safetyhub/infrastructure/cache/redis/RedisConfig.java`
+- `/backend/safetyhub-infrastructure/persistence/src/test/java/com/safetyhub/infrastructure/cache/redis/RedisCacheServiceTest.java`
+
+**구현 내용:**
+
+1. **CacheService 인터페이스 (Port)**
+   - `put(key, value)`: 캐시 저장
+   - `put(key, value, ttl)`: TTL과 함께 저장
+   - `get(key, type)`: 타입 안전 조회
+   - `exists(key)`: 키 존재 확인
+   - `delete(key)`: 키 삭제
+   - `deleteByPattern(pattern)`: 패턴 기반 삭제
+   - `keys(pattern)`: 패턴 기반 조회
+   - `expire(key, ttl)`: TTL 설정
+   - `getExpire(key)`: 남은 TTL 조회
+
+2. **CacheKey (키 네이밍 유틸리티)**
+   - 일관된 키 네이밍: `{domain}:{type}:{id}`
+   - 키 생성 메서드:
+     - `robotState(id)`: robot:state:{id}
+     - `robotLocation(id)`: robot:location:{id}
+     - `robotBattery(id)`: robot:battery:{id}
+     - `deviceState(id)`: device:state:{id}
+     - `workerLocation(id)`: worker:location:{id}
+     - `workerHealth(id)`: worker:health:{id}
+     - `heartbeat(id)`: heartbeat:{id}
+     - `emergency(id)`: emergency:{id}
+   - 패턴 생성: `allByDomain()`, `allByDomainAndType()`
+   - 키 검증: 길이 제한 (512자), 특수문자 제한
+
+3. **CacheTTL (TTL 정책)**
+   - ROBOT_STATE: 1분
+   - ROBOT_LOCATION: 30초 (실시간 추적)
+   - ROBOT_BATTERY: 5분
+   - DEVICE_STATE: 2분
+   - WORKER_LOCATION: 30초
+   - WORKER_HEALTH: 1분
+   - HEARTBEAT: 1분 (타임아웃 감지)
+   - EMERGENCY: 10분
+   - SESSION: 30분
+   - DEFAULT: 5분
+
+4. **RedisCacheService (구현체)**
+   - Spring Data Redis 사용
+   - JSON 직렬화/역직렬화
+   - 타입 안전 조회 (제네릭)
+   - 에러 처리: 역직렬화 실패 시 캐시 삭제
+   - 로깅: trace 레벨
+
+5. **CacheSerializationException**
+   - JSON 변환 실패 시 발생
+   - 원인 예외 체이닝
+
+6. **RedisConfig (설정)**
+   - Lettuce 사용 (비동기, 스레드 안전)
+   - String 직렬화 (키, 값)
+   - host: localhost
+   - port: 6379
+   - database: 0
+
+**보안 조치:**
+- ✅ 입력 검증: null 체크, 빈 문자열 체크
+- ✅ 키 검증: 길이 제한, 특수문자 제한
+- ✅ 직렬화 에러 처리
+- ✅ 손상된 캐시 자동 삭제
+- ✅ 민감정보 로깅 방지 (trace 레벨)
+- ✅ TTL 자동 만료 (보안 강화)
+
+**키 네이밍 전략:**
+- 일관성: {domain}:{type}:{id}
+- 가독성: robot:state:robot-001
+- 패턴 삭제: robot:state:*
+- 충돌 방지: 도메인 분리
+
+**TTL 정책:**
+- Hot 데이터: 30초~1분 (실시간)
+- Warm 데이터: 2~5분 (중간)
+- Cold 데이터: 10~30분 (장기)
+
+**성능 최적화:**
+- Lettuce 사용 (비동기 I/O)
+- Connection Pool
+- JSON 직렬화 (가벼움)
+
+**테스트 커버리지:**
+- 총 20개 테스트 케이스 작성
+- put 테스트 (5개)
+- get 테스트 (3개)
+- exists 테스트 (2개)
+- delete 테스트 (2개)
+- keys 테스트 (1개)
+- expire 테스트 (2개)
+- CacheKey 테스트 (5개)
+
+---
+
+## 📊 Phase 2 - 1단계 완료 요약
+
+### ✅ 완료된 모든 작업 (5/5)
+
+1. ✅ **1-1. Gateway 도메인 모델 설계**
+   - Protocol, MessageType, MessageEnvelope
+   - 24개 테스트 케이스
+
+2. ✅ **1-2. ProtocolAdapter 인터페이스 정의**
+   - ProtocolAdapter, AbstractProtocolAdapter
+   - SimulatorProtocolAdapter 예제
+   - 20개 테스트 케이스
+
+3. ✅ **1-3. MessageRouter 개선**
+   - ImprovedMessageRouter (Hot/Warm/Cold Path)
+   - HotPathHandler, WarmPathHandler, ColdPathHandler
+   - 18개 테스트 케이스
+
+4. ✅ **1-4. Kafka Producer 기본 구현**
+   - EventPublisher, KafkaEventPublisher
+   - 6개 토픽, JSON 직렬화
+   - 14개 테스트 케이스
+
+5. ✅ **1-5. Redis 캐시 서비스 기본 구현**
+   - CacheService, RedisCacheService
+   - 키 네이밍, TTL 정책
+   - 20개 테스트 케이스
+
+### 📈 통계
+
+- **총 파일:** 30개
+- **총 테스트:** 96개
+- **보안 조치:** 30+ 항목
+- **설계 패턴:** Port & Adapter, 전략, 템플릿 메서드
+
 ---
 
 ## 🔗 참고 문서
