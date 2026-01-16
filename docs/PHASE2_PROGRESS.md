@@ -456,6 +456,88 @@ Phase 2는 범위가 크므로, 다음 순서로 진행을 제안합니다:
 - 성능 테스트 (2개)
 - MessageHandlingException (4개)
 
+#### 04:00 - 1-4. Kafka Producer 기본 구현 완료 ✅
+
+**생성 파일:**
+- `/backend/safetyhub-infrastructure/messaging/src/main/java/com/safetyhub/infrastructure/messaging/EventTopic.java`
+- `/backend/safetyhub-infrastructure/messaging/src/main/java/com/safetyhub/infrastructure/messaging/EventPublisher.java`
+- `/backend/safetyhub-infrastructure/messaging/src/main/java/com/safetyhub/infrastructure/messaging/EventPublishException.java`
+- `/backend/safetyhub-infrastructure/messaging/src/main/java/com/safetyhub/infrastructure/messaging/kafka/KafkaEventPublisher.java`
+- `/backend/safetyhub-infrastructure/messaging/src/main/java/com/safetyhub/infrastructure/messaging/kafka/KafkaEventMessage.java`
+- `/backend/safetyhub-infrastructure/messaging/src/main/java/com/safetyhub/infrastructure/messaging/kafka/KafkaConfig.java`
+- `/backend/safetyhub-infrastructure/messaging/src/test/java/com/safetyhub/infrastructure/messaging/kafka/KafkaEventPublisherTest.java`
+
+**구현 내용:**
+
+1. **EventTopic Enum (토픽 정의)**
+   - ROBOT_EVENTS: 로봇 이벤트
+   - DEVICE_EVENTS: 장치 이벤트 (SafetyKit)
+   - WORKER_EVENTS: 작업자 이벤트 (LifeGuard)
+   - EMERGENCY_EVENTS: 긴급 이벤트 (Hot Path)
+   - SYSTEM_EVENTS: 시스템 이벤트
+   - ANALYTICS_EVENTS: 분석용 이벤트 (Cold Path)
+
+2. **EventPublisher 인터페이스 (Port)**
+   - `publish(envelope)`: 토픽 자동 결정
+   - `publish(topic, envelope)`: 토픽 명시
+   - `publish(topic, partitionKey, envelope)`: 파티션 키 지정
+   - 비동기 발행 (CompletableFuture)
+   - 기술 독립적 인터페이스
+
+3. **EventPublishException**
+   - 이벤트 발행 실패 시 발생
+   - 토픽 정보 포함
+   - 원인 예외 체이닝
+
+4. **KafkaEventPublisher (구현체)**
+   - Spring Kafka 사용
+   - JSON 직렬화
+   - 토픽 자동 결정 로직
+   - 파티션 키: 소스 ID (순서 보장)
+   - 비동기 발행
+   - 에러 처리 및 로깅
+
+5. **KafkaEventMessage (DTO)**
+   - MessageEnvelope ↔ Kafka 메시지 변환
+   - JSON 직렬화 가능
+   - payload를 Base64로 인코딩
+   - 양방향 변환 지원
+
+6. **KafkaConfig (설정)**
+   - Producer 설정
+   - acks=all (안정성)
+   - retries=3 (재시도)
+   - compression=lz4 (압축)
+   - linger.ms=10 (배치 처리)
+   - idempotence=true (멱등성)
+
+**보안 조치:**
+- ✅ 입력 검증: null 체크, 토픽/키/envelope 검증
+- ✅ 직렬화 에러 처리
+- ✅ 타임아웃 설정 (max.block.ms=5초)
+- ✅ 민감정보 로깅 방지
+- ✅ 멱등성 보장 (중복 전송 방지)
+
+**토픽 전략:**
+- 도메인별 분리 (확장성)
+- 이벤트 타입별 분리 (필터링 용이)
+- 파티션 키: 소스 ID (순서 보장)
+- 긴급/분석 이벤트 별도 토픽
+
+**성능 최적화:**
+- 비동기 발행 (CompletableFuture)
+- 배치 전송 (linger.ms=10)
+- 압축 (lz4)
+- 버퍼 메모리 (32MB)
+
+**테스트 커버리지:**
+- 총 14개 테스트 케이스 작성
+- 토픽 자동 결정 (4개)
+- 토픽 명시 (2개)
+- 파티션 키 지정 (1개)
+- 입력 검증 (3개)
+- 메시지 변환 (2개)
+
 ---
 
 ## 🔗 참고 문서
