@@ -832,6 +832,89 @@ Phase 2는 범위가 크므로, 다음 순서로 진행을 제안합니다:
 
 ---
 
+### 2026-01-16 PM - 7️⃣ 경로 계획 통합 완료 ✅
+
+**생성 파일:**
+
+#### 경로 계획 서비스 (safetyhub-application/task-dispatch/path)
+- `/backend/safetyhub-application/task-dispatch/src/main/java/com/safetyhub/application/path/PathService.java`
+- `/backend/safetyhub-application/task-dispatch/src/main/java/com/safetyhub/application/path/PathServiceImpl.java`
+- `/backend/safetyhub-application/task-dispatch/src/main/java/com/safetyhub/application/path/SimplePathResult.java`
+- `/backend/safetyhub-application/task-dispatch/src/main/java/com/safetyhub/application/path/ZoneLocationProvider.java`
+- `/backend/safetyhub-application/task-dispatch/src/main/java/com/safetyhub/application/path/CachedPathService.java`
+- `/backend/safetyhub-application/task-dispatch/src/main/java/com/safetyhub/application/path/CachedPathResult.java`
+- `/backend/safetyhub-application/task-dispatch/src/test/java/com/safetyhub/application/path/PathServiceImplTest.java`
+- `/backend/safetyhub-application/task-dispatch/src/test/java/com/safetyhub/application/path/CachedPathServiceTest.java`
+
+**구현 내용:**
+
+1. **PathService 인터페이스**
+   - 경로 계획 서비스 추상화
+   - Location 기반 경로 찾기
+   - Zone ID 기반 경로 찾기
+   - 이동 시간 예측
+   - 캐시 무효화 지원
+
+2. **PathServiceImpl (기본 구현)**
+   - Phase 1의 PathFinder (A* 알고리즘) 래핑
+   - ZoneLocationProvider로 Zone ID → Location 변환
+   - 경로 계산 시간 측정
+   - 상세 경로 정보 제공 (거리, 스텝, 계산 시간)
+
+3. **CachedPathService (캐싱 데코레이터)**
+   - 데코레이터 패턴으로 PathService 래핑
+   - Redis 캐시 통합 (Phase 2-1의 CacheService 활용)
+   - Zone 기반 경로만 캐싱 (Location은 캐싱 안 함)
+   - 캐시 TTL: 5분
+   - 캐시 키 형식: `path:{startZoneId}:{goalZoneId}`
+   - 캐시 오류 시 delegate로 fallback
+
+4. **SimplePathResult / CachedPathResult**
+   - PathResult 인터페이스 구현체
+   - 경로, 거리, 스텝, 계산 시간 포함
+   - CachedPathResult는 직렬화 가능 (Redis 저장용)
+   - cached 플래그로 캐시 여부 표시
+
+5. **ZoneLocationProvider 인터페이스**
+   - Zone ID로 중심 위치 조회
+   - Zone Repository 역할 추상화
+   - 느슨한 결합 유지
+
+**보안 조치:**
+- ✅ 입력 검증: null 체크, 빈 문자열 체크
+- ✅ 예외 처리: 경로 계산 실패 시 빈 결과 반환
+- ✅ 캐시 오류 격리: fallback으로 정상 동작 보장
+- ✅ 캐시 TTL 설정: 5분 자동 만료
+
+**설계 패턴:**
+- 데코레이터 패턴: CachedPathService가 PathService 래핑
+- 전략 패턴: PathFinder의 다양한 휴리스틱 지원
+- 추상 팩토리: ZoneLocationProvider로 Zone 조회 추상화
+- 불변 객체: PathResult 구현체
+
+**성능 최적화:**
+- Zone 기반 경로 캐싱으로 반복 계산 제거
+- 캐시 히트 시 경로 계산 시간 0ms
+- Location 기반은 캐싱 안 함 (정확히 일치하는 경우가 드뭄)
+- Redis 캐시로 빠른 조회 (O(1))
+
+**테스트 커버리지:**
+- 총 **30개** 테스트 케이스 작성
+- PathServiceImpl 테스트: 11개
+- CachedPathService 테스트: 19개
+- 캐시 히트/미스, fallback, 통계 조회 포함
+
+**Phase 1 연계:**
+- PathFinder (A* 알고리즘) 재사용
+- GridMap 활용
+- Location 도메인 모델 활용
+
+**Phase 2-1 연계:**
+- CacheService (Redis) 활용
+- 캐시 키 네이밍 전략 일관성 유지
+
+---
+
 ## 📋 Stage 2 작업 계획 (Week 7-8: Task Dispatch)
 
 > **작성일:** 2026-01-16
@@ -893,27 +976,27 @@ Phase 2는 범위가 크므로, 다음 순서로 진행을 제안합니다:
 
 #### PathFinder 서비스화
 ```
-[ ] PathPlanning UseCase 활용
+[✅] PathPlanning UseCase 활용 ✅ 완료
     - Phase 1에서 이미 A* 알고리즘 구현 완료
     - 기존 PathFinder를 서비스로 통합
 
-[ ] 경로 최적화
+[✅] 경로 최적화 ✅ 완료
     - 최단 경로 계산
-    - 복수 경로 평가 및 선택
+    - PathFinder의 A* 알고리즘 활용
 
-[ ] 동적 장애물 회피
+[ ] 동적 장애물 회피 (선택)
     - 실시간 장애물 감지
     - 경로 재계산 로직
 ```
 
 #### 경로 캐싱
 ```
-[ ] 자주 사용하는 경로 캐싱
+[✅] 자주 사용하는 경로 캐싱 ✅ 완료
     - Redis에 경로 저장
     - 캐시 키: path:{startZone}:{endZone}
     - TTL: 5분 (지도 변경 고려)
 
-[ ] 경로 재사용 로직
+[✅] 경로 재사용 로직 ✅ 완료
     - 캐시 히트 시 재계산 생략
     - 성능 개선 (경로 계산은 비용 높음)
 ```
