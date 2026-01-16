@@ -324,6 +324,62 @@ Phase 2는 범위가 크므로, 다음 순서로 진행을 제안합니다:
 - 유틸리티 메서드 테스트 (7개)
 - 다양한 프로토콜 테스트 (3개)
 
+#### 02:00 - 1-2. ProtocolAdapter 인터페이스 정의 완료 ✅
+
+**생성 파일:**
+- `/backend/safetyhub-core/src/main/java/com/safetyhub/core/gateway/ProtocolAdapter.java`
+- `/backend/safetyhub-core/src/main/java/com/safetyhub/core/gateway/AbstractProtocolAdapter.java`
+- `/backend/safetyhub-core/src/main/java/com/safetyhub/core/gateway/MessageConversionException.java`
+- `/backend/safetyhub-adapter/adapter-simulator/src/main/java/com/safetyhub/adapter/simulator/SimulatorProtocolAdapter.java`
+- `/backend/safetyhub-core/src/test/java/com/safetyhub/core/gateway/ProtocolAdapterTest.java`
+
+**구현 내용:**
+
+1. **ProtocolAdapter 인터페이스 (Port & Adapter 패턴의 핵심)**
+   - `toEnvelope(T message)`: 프로토콜별 메시지 → MessageEnvelope 변환
+   - `fromEnvelope(MessageEnvelope envelope)`: MessageEnvelope → 프로토콜별 메시지 변환
+   - `getSupportedProtocol()`: 지원 프로토콜 타입 반환
+   - `supports(T message)`: 메시지 지원 여부 확인
+
+2. **AbstractProtocolAdapter 추상 클래스**
+   - ProtocolAdapter 구현을 위한 기본 기능 제공
+   - 공통 검증 로직 (null 체크, 페이로드 크기 검증)
+   - 예외 처리 및 래핑 (MessageConversionException)
+   - 템플릿 메서드 패턴: `doToEnvelope()`, `doFromEnvelope()` 구현 위임
+
+3. **MessageConversionException**
+   - 메시지 변환 실패 시 발생하는 예외
+   - 프로토콜 정보 포함
+   - 원인 예외 체이닝
+
+4. **SimulatorProtocolAdapter (예제 구현)**
+   - JSON 기반 메시지 변환
+   - Jackson ObjectMapper 사용
+   - 개발/테스트 환경에서 사용
+
+**보안 조치:**
+- ✅ 입력 검증: null 체크, 메시지 타입 검증
+- ✅ 페이로드 크기 검증 (1MB 제한)
+- ✅ 예외 처리: 민감정보 노출 방지
+- ✅ 프로토콜 일치 검증
+- ✅ 템플릿 메서드 패턴으로 안전한 확장
+- ✅ final 메서드로 검증 로직 우회 방지
+
+**설계 원칙:**
+- Port & Adapter 패턴: Core는 Adapter를 모름
+- 단방향 의존성: Adapter → Core
+- 느슨한 결합: 프로토콜 변경이 Core에 영향 없음
+- 확장 가능: 새 프로토콜 추가 시 인터페이스만 구현
+
+**테스트 커버리지:**
+- 총 20개 테스트 케이스 작성
+- toEnvelope 테스트 (3개)
+- fromEnvelope 테스트 (3개)
+- 프로토콜 지원 테스트 (2개)
+- supports 테스트 (2개)
+- 페이로드 크기 검증 (2개)
+- MessageConversionException 테스트 (4개)
+
 ---
 
 ## 🔗 참고 문서
